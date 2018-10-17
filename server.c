@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
+#include <string.h>
 //Function to generate the x and y positions for the mines
 int generateMineLocations(){
   //defining the data for the nodes in our linked list which is storing the mine locations
@@ -71,20 +71,30 @@ int generateMineLocations(){
   return 0;
 }
 
-string checkPassword(string username, string password) {
-  string storedPassword = "Password";
-  string storedUsername = "Reilly"
-  if(username == storedUsername && password == storedPassword) {
+int checkPassword(char *username, char *password) {
+  printf("Inside Func");
+  char *storedPassword = "Password";
+  char *storedUsername = "Reilly";
+  int uRet;
+  uRet = strcmp(storedPassword, password);
+  /*int pRet = strcmp(storedUsername, username);
+  if(uRet == 0 && pRet == 0) {
     printf("Login Successful");
   }
   else{
-    printf("Login Unseccessful");
+    printf("Login Unsuccessful");
   }
-
+  */
+  return 1;
 }
 
 void main(int argc, char argv) {
-
   //generateMineLocations();
-  checkPassword("Reilly", "Password");
+  printf("\nEnter Username: \n");
+  char *username;
+  scanf("%s", username);
+  printf("\nEnter Password: \n");
+  char *password;
+  scanf("%s", password);
+  checkPassword(username, password);
 }
