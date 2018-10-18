@@ -4,7 +4,8 @@
 #include <stddef.h>
 #define DEBUG 1
 
-
+//Early Declaration for iterative function
+void reveal_adjacent_tiles(GameState *game, int x , int y);
 
 //Checks the coordinates for a mine
 bool tile_contains_mine(GameState *game, int x, int y) {
@@ -36,7 +37,20 @@ void set_adjacencies(GameState *game) {
 //If a tile has 0 adjacent tiles, it will reveal all around it
 //This repeats for each tile with 0 adjacents
 void reveal_adjacent_tiles(GameState *game, int x , int y) {
-	
+	int yo, xo;
+	for (xo = -1; xo < 2; xo++) {
+		for (yo = -1; yo < 2; yo++) {
+			if (((x+xo >= 0) && (x+xo < NUM_TILES_X)) &&
+				((y+yo >= 0) && (y+yo < NUM_TILES_Y))) {
+				if (game->tiles[x+xo][y+yo].revealed == 0) {
+					game->tiles[x+xo][y+yo].revealed = 1;
+					if (game->tiles[x+xo][y+yo].adjacent_mines == 0) {
+						reveal_adjacent_tiles(game, x+xo, y+yo);
+					}
+				}
+			}
+		}
+	}
 }
 
 
@@ -83,13 +97,16 @@ GameState * init_game() {
 }
 
 //Returns the adjancies at that location
-void reveal_tile(GameState *game, int x, int y) {
+int reveal_tile(GameState *game, int x, int y) {
 	if (tile_contains_mine(game, x, y)) {
 		if (DEBUG) printf("GAME OVER");
 		return -1;
 	} else {
 		game->tiles[x][y].revealed = 1;
-		return game->tiles[x][y].adjacent_mines;
+		if (game->tiles[x][y].adjacent_mines == 0) {
+			reveal_adjacent_tiles(game, x, y);
+		}
+		return 1;
 	}
 }
 
