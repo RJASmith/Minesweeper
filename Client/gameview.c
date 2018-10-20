@@ -1,6 +1,7 @@
 #include "gameview.h"
 #include <stdio.h>
-
+#define BORDER_LENGTH 9
+#define DEBUG 1
 
 
 //All function return the new "gameStatus" which correlates to a displayed screen
@@ -12,17 +13,25 @@
 //4		- Exit Game
  
 void draw_border() {
-	for(int i=0; i < 10; i++) printf("========");
+	for(int i=0; i < BORDER_LENGTH; i++) printf("========");
 	printf("\n");
 }
 
-int get_input_letter() {
+void clear_buffer() {
+	while ((getchar()) != '\n');
+}
+
+//Return the numerical value of the alphabet letter
+int get_input_letter(int limit) {
 	char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	char val = '\0';
 	scanf("%c", &val);
-	getchar();
+	clear_buffer();
 	for(int i=0; letters[i]; i++) {
-		if (letters[i] == val) return (i % 26);
+			if (letters[i] == val) {
+				if ((i % 26) < limit) return (i % 26);
+				return -1;
+			}
 	}
 	return -1;
 }
@@ -31,7 +40,7 @@ int get_input_number() {
 	char numbers[] = "123456789";
 	char val = '\0';
 	scanf("%c", &val);
-	getchar();
+	clear_buffer();
 	for(int i=0; numbers[i]; i++) {
 		if (numbers[i] == val) return i;
 	}
@@ -52,8 +61,9 @@ int draw_login() {
 	printf("Password: ");
 	char password[20];
 	scanf("%s", password);
+	clear_buffer();
 	//Authenticate_user(username, password);
-		printf("\n\nThe username or password you have entered is incorrect. Disconnecting.");
+		printf("\n\nThe username or password you have entered is incorrect. Disconnecting.\n");
 		//return 4
 	
 	return 1;
@@ -61,19 +71,20 @@ int draw_login() {
 
 //Draws the Main menu
 int draw_mainmenu() {
-	getchar();
-	printf("\n\nWelcome to Minesweeper Online!\n");
+	draw_border();
+	printf("\nWelcome to Minesweeper Online!\n");
 	printf("\nPlease enter a selection:\n");
 	printf("<1> Start Game\n<2> View Leader Board\n<3> Quit Game\n");
 	printf("\nSelect Option (1-3): ");
-	char val = 1;
-	scanf("%c", &val);
-	if (val == '1') {
+	int val = get_input_number(3);
+	if (val == 0) {
+		printf("\nStarting a new Game...\n");
 		return 2;
-	} else if (val == '2') {
+	} else if (val == 1) {
+		printf("\nDisplaying Leaderboards...\n");
 		return 3;
-	} else if (val == '3') {
-		printf("\nQuitting Game...");
+	} else if (val == 2) {
+		printf("\nQuitting Game...\n");
 		return 4;
 	} else {
 		printf("\nPlease select either 1, 2, or 3.\n");
@@ -83,6 +94,7 @@ int draw_mainmenu() {
 
 //Draws the game tiles in the mine field
 int draw_gameview() {
+	draw_border();	
 	printf("\nRemaining Mines: %d\n", 10);
 	//Get_updated_field
 	//Draw mine field
@@ -91,40 +103,70 @@ int draw_gameview() {
 	printf("<P> Place a Flag\n");
 	printf("<Q> Quit Game\n");
 	
-	int input;
-	do {
-		printf("\nOption (R, P, Q):\n");
-		input = get_input_letter();
-		if !((input < 15) || (input > 17)) {
-			printf("Please enter one of the listed options.\n");
-			input = -1;
-		}//Input is not Q R or P
+	int input, gameProgress = 1;
+	
+		//Get the option selected
+		do {
+			printf("\nOption (R, P, Q): ");
+			input = get_input_letter(26);
+			if (DEBUG) printf("Imput value %d\n",input);
+			
+			if ((input < 15) || (input > 17)) {//Input is not Q R or P
+				printf("Please enter one of the listed options.\n");
+				input = -1;
+			}
+		} while (input == -1);
 		
-	} while (input = -1);
-	
-	if (input == 15) {
-	
-	
-	}
-	int selection = -1;
-	int input = 1;
-	while(selecting) {
-		printf("Enter the row Letter: ");
-		input = get_input_letter();
-		if (input == -1) {
-			printf("TRASH");
-		} else {
-			printf("Value: %d\n", input);
+		//If P was selected - Place Flag
+		if (input == 15) {
+			int x,y;
+			printf("\nPlacing a Flag!");
+			do {
+				printf("\nEnter the Column Number: ");
+				x = get_input_number();
+				if (x == -1) printf("\nPlease try again.");
+			} while (x == -1);
+			
+			do {
+				printf("Enter the Row Letter: ");
+				y = get_input_letter(9);
+				if (y == -1) printf("\nPlease try again\n.");
+			} while (y == -1);
+			printf("\nPlacing Flag!\n", x,y);
+			//Place flag at x,y.
 		}
-		printf("Enter the column Number ");
-		input = get_input_number();
-		if (input == -1) {
-			printf("TRASH");
-		} else {
-			printf("Value: %d\n", input);
+		
+		//If Q was selected - Quit Game
+		if (input == 16) {
+			printf("\nReturning to Main Menu...\n");
+			gameProgress = 0;
 		}
+	
+		//If R was selected - Reveal Tile
+		if (input == 17) {
+			int x,y;
+			printf("\nRevealing a Tile!");
+			do {
+				printf("\nEnter the Column Number: ");
+				x = get_input_number();
+				if (x == -1) printf("\nPlease try again.");
+			} while (x == -1);
+			
+			do {
+				printf("Enter the Row Letter: ");
+				y = get_input_letter(9);
+				if (y == -1) printf("\nPlease try again\n.");
+			} while (y == -1);
+			printf("\nRevealing Tile!\n");
+			//Reveal tile at x,y.
+		}
+	
+
+	
+	if (!gameProgress) {
+		return 1;
 	}
-	return 4;
+	return 2;
 }
 
 //Draws the Leader Boards
