@@ -1,0 +1,5 @@
+#ifndef __CLIENTCONNECTION_H__
+#define __CLIENTCONNECTION_H__
+
+
+#endif //__CLIENTCONNECTION_H__
