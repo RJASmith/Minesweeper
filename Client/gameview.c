@@ -83,8 +83,30 @@ int draw_mainmenu() {
 
 //Draws the game tiles in the mine field
 int draw_gameview() {
-	printf("\nGAME WINDOW\n");
-	int selecting = 1;
+	printf("\nRemaining Mines: %d\n", 10);
+	//Get_updated_field
+	//Draw mine field
+	printf("\nChoose an Option:\n");
+	printf("<R> Reveal a Tile\n");
+	printf("<P> Place a Flag\n");
+	printf("<Q> Quit Game\n");
+	
+	int input;
+	do {
+		printf("\nOption (R, P, Q):\n");
+		input = get_input_letter();
+		if !((input < 15) || (input > 17)) {
+			printf("Please enter one of the listed options.\n");
+			input = -1;
+		}//Input is not Q R or P
+		
+	} while (input = -1);
+	
+	if (input == 15) {
+	
+	
+	}
+	int selection = -1;
 	int input = 1;
 	while(selecting) {
 		printf("Enter the row Letter: ");
