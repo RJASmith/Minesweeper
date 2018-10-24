@@ -30,6 +30,26 @@ int recv_int(int connection) {
     return (int)ntohl(val);
 }
 
+//Send a string to a network partner
+void send_string(int connection, char msg[20]) {
+		if (send(connection, msg, 20,0) == -1) {
+			perror("Error: Send char-");
+			exit(1);
+		}
+}
+
+//Retrive a string from a network partner
+void recv_string(int connection, char *msg) {
+    int bytes;
+    if ((bytes = recv(connection, msg, 20,0)) == -1) {
+		perror("Error: Recv char-");
+		exit(1);
+    }
+    msg[bytes] = '\0';
+    printf("Received string %s\n", msg);
+}
+
+
 bool authenticate_user(char username[20], char password[20]) {
     //filepath of authentication.txt. As it is in the same directory, just the filename is needed
     char* filepath = "Authentication.txt";

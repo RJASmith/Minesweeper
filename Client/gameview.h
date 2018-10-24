@@ -36,15 +36,15 @@ struct LBEntry {
 //4		- Exit Game
 
 //Draws the Login Screen
-int draw_login();
+int draw_login(int connection);
 
 //Draws the Main menu
-int draw_mainmenu();
+int draw_mainmenu(int connection);
 
 //Draws the game tiles in the mine field
-int draw_gameview();
+int draw_gameview(int connection);
 
 //Draws the Leader Boards
-int draw_leaderboard();
+int draw_leaderboard(int connection);
 
 #endif //__GAMEVIEW_H__

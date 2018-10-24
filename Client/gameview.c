@@ -1,4 +1,5 @@
 #include "gameview.h"
+#include "clientconnection.h"
 #include <stdio.h>
 #define BORDER_LENGTH 9
 #define DEBUG 1
@@ -48,29 +49,31 @@ int get_input_number() {
 }
 
 //Draws the Login Screen
-int draw_login() {
+int draw_login(int connection) {
 	draw_border();
 	printf("Welcome to the Online Minesweeper Game!\n");
 	draw_border();
-	//Test Connection to Server
-	
 	printf("\n To begin, please login with you username and password:\n");
 	printf("\nUsername: ");
 	char username[20];
 	scanf("%s", username);
+	if (DEBUG) printf("Entered Username %s\n", username);
+	send_string(connection, username);
 	printf("Password: ");
 	char password[20];
 	scanf("%s", password);
+	if (DEBUG) printf("Entered Password %s\n", password);
+	send_string(connection, password);
 	clear_buffer();
-	//Authenticate_user(username, password);
+	if (recv_int(connection)==0) {
 		printf("\n\nThe username or password you have entered is incorrect. Disconnecting.\n");
-		//return 4
-	
+		return 4;
+	}
 	return 1;
 }
 
 //Draws the Main menu
-int draw_mainmenu() {
+int draw_mainmenu(int connection) {
 	draw_border();
 	printf("\nWelcome to Minesweeper Online!\n");
 	printf("\nPlease enter a selection:\n");
@@ -93,7 +96,7 @@ int draw_mainmenu() {
 }
 
 //Draws the game tiles in the mine field
-int draw_gameview() {
+int draw_gameview(int connection) {
 	draw_border();	
 	printf("\nRemaining Mines: %d\n", 10);
 	//Get_updated_field
@@ -132,7 +135,7 @@ int draw_gameview() {
 				y = get_input_letter(9);
 				if (y == -1) printf("\nPlease try again\n.");
 			} while (y == -1);
-			printf("\nPlacing Flag!\n", x,y);
+			printf("\nPlacing Flag!\n");
 			//Place flag at x,y.
 		}
 		
@@ -170,7 +173,7 @@ int draw_gameview() {
 }
 
 //Draws the Leader Boards
-int draw_leaderboard() {
+int draw_leaderboard(int connection) {
 	return 4;
 }
 

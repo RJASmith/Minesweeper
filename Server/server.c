@@ -34,12 +34,26 @@ void *run_game(void *vargs) { //Thread main
 		*p = 1;
 	
 	if (DEBUG) printf("Thread Connection: %d\n", args->connection);
-	send_int(args->connection, 8);
-		/*if (send((int)args->connection, "1", 4,0)== -1) {
-			perror("Error: Thread send -");
-			exit(1);
-		}*/
+	send_int(args->connection, 1); //Send confirmation to client
+	char username[20], password[20];
+	if (DEBUG) printf("Waiting for username...\n");
+	recv_string(args->connection, (char *)username);
+	if (DEBUG) printf("Received username: %s\n", username);
+	
+	if (DEBUG) printf("Waiting for password...\n");
+	recv_string(args->connection, (char *)password);
+	if (DEBUG) printf("Received password: %s\n", password);
+	if (authenticate_user(username, password)) {
+		if (DEBUG) printf("Login SUCCESS\n");
+		send_int(args->connection, 1);
+	} else {
+		if (DEBUG) printf("Login FAILED\n");
+		send_int(args->connection, 0);
+	}
+
 	close(args->connection);
+	*p = 0;
+	free(args);
 	return 0;
 }
 

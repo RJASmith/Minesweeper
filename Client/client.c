@@ -65,16 +65,17 @@ int main(int argc, char **argv) {
 	server_addr.sin_port = htons(myPort);     // short, network byte order
 	server_addr.sin_addr = *((struct in_addr *)he->h_addr_list[0]); // The server's IP address
 	
+	//Connect to the server
 	if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1) {
 		perror("Error: Connect -");
 		exit(1);
 	}
 	
-	
-	
+	//Wait for server confirmation
 	int val = recv_int(sockfd);
 	printf("Received %d\n", val);
 	
+	//If server returns 0 (too busy)
 	if (val == 0) {
 		printf("The server has 10 connection and is too busy...\n");
 		close(sockfd);
@@ -101,16 +102,16 @@ int main(int argc, char **argv) {
 	
 	while(gameStatus != 4) {
 		if (gameStatus == 0) { //Game status is 0 = Login Screen
-			gameStatus = draw_login();
+			gameStatus = draw_login(sockfd);
 		}
 		if (gameStatus == 1) { //Game status is 1 = Main menu
-			gameStatus = draw_mainmenu();
+			gameStatus = draw_mainmenu(sockfd);
 		}
 		if (gameStatus == 2) { //Game status is 2 = gameview
-			gameStatus = draw_gameview();
+			gameStatus = draw_gameview(sockfd);
 		}
 		if (gameStatus == 3) { //Game status is 3 + Leader Boards
-			gameStatus = draw_leaderboard();
+			gameStatus = draw_leaderboard(sockfd);
 		}
 
 	} //Game status is 4 = Quitting
