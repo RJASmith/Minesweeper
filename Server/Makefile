@@ -4,9 +4,9 @@ LDFLAGS =
 
 all: server 
 
-server: server.o connection.o gamehost.o
+server: server.o connection.o gamehost.o -lpthread
 
-server.o: server.c
+server.o: -lpthread server.c
 
 connection.o: connection.c
 

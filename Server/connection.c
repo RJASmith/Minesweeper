@@ -1,11 +1,34 @@
 #include "connection.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>  
+#include <netinet/in.h>
+
 #define TXT_MAX_LENGTH 1000
 #define TRUE 1
 #define FALSE 0
+
+//Send an integer to a network partner
+void send_int(int connection, int msg) {
+    uint32_t val = htonl(msg);
+		if (send(connection, &val, sizeof(uint32_t),0) == -1) {
+			perror("Error: Send char-");
+			exit(1);
+		}
+}
+
+//Retrive an integer from a network partner
+int recv_int(int connection) {
+	uint32_t val = 0;	
+    if (recv(connection, &val, sizeof(uint32_t),0) == -1) {
+		perror("Error: Recv char-");
+		exit(1);
+    }
+    return (int)ntohl(val);
+}
 
 bool authenticate_user(char username[20], char password[20]) {
     //filepath of authentication.txt. As it is in the same directory, just the filename is needed
