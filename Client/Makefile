@@ -1,5 +1,5 @@
 CC = c99 
-CFLAGS = -Wall # Show all reasonable warnings
+CFLAGS = -lpthread -Wall # Show all reasonable warnings
 LDFLAGS = 
 
 all: client
