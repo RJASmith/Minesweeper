@@ -3,7 +3,7 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #define BORDER_LENGTH 9
-#define DEBUG 1
+#define DEBUG 0
 #define TILES_PER_ROW 9
 
 
@@ -26,6 +26,21 @@ void clear_buffer() {
 	while ((getchar()) != '\n');
 }
 
+//Converts an integer or
+int char_to_int(char ch, char type, int limit) {
+	if (type == 'c') {
+		for(int i=0; letters[i]; i++) {
+			if (letters[i] == ch) {
+				if ((i % 26) < limit) return (i % 26);
+				return -1;
+			}
+		}
+	} else {
+		return atoi(&ch)-1;
+	}
+	return -1;
+}
+
 //Return the numerical value of the alphabet letter
 int get_input_letter(int limit) {
 	char val = '\0';
@@ -42,14 +57,10 @@ int get_input_letter(int limit) {
 
 //takes a number char and return it's integer value-1
 int get_input_number() {
-	char numbers[] = "123456789";
 	char val = '\0';
 	scanf("%c", &val);
 	clear_buffer();
-	for(int i=0; numbers[i]; i++) {
-		if (numbers[i] == val) return i;
-	}
-	return -1;
+	return atoi(&val)-1;
 }
 
 //Draws the Login Screen
@@ -92,13 +103,15 @@ int draw_mainmenu(int connection) {
 	int val = get_input_number(3);
 	if (val == 0) {
 		//Tell server a new game is starting
-		send_instruction(connection, 0, 0, 0);
+		send_instruction(connection, 0, 0, 0); //Request new game from server
 		printf("\nStarting a new Game...\n");
 		return 2; //Switch to game menu
 	} else if (val == 1) {
+		send_instruction(connection, 1, 0, 0); //Request leaderboards from server
 		printf("\nDisplaying Leaderboards...\n");
 		return 3; //Swicth to leader board view
 	} else if (val == 2) {
+		send_instruction(connection, 4, 0, 0); //Tell server to close connection
 		printf("\nQuitting Game...\n");
 		return 4; //Swicth to game clean up screen
 	} else {
@@ -141,6 +154,8 @@ int draw_gameview(int connection) {
 				printf("  ");
 			} else if (val == -2) {
 				printf("+ ");
+			} else if (val == -3) {
+				printf("* ");
 			} else {
 				printf("%d ", val);
 			}
@@ -187,18 +202,17 @@ int draw_gameview(int connection) {
 			int x,y;
 			printf("\nPlacing a Flag!");
 			do {
-				printf("\nEnter the Column Number: ");
-				x = get_input_number();
-				if (x == -1) printf("\nPlease try again.");
-			} while (x == -1);
-			
-			do {
-				printf("Enter the Row Letter: ");
-				y = get_input_letter(9);
-				if (y == -1) printf("\nPlease try again\n.");
-			} while (y == -1);
-			printf("\nPlacing Flag!\n");
+				printf("\nEnter the tile coordinates: ");
+				char val[2];
+				scanf("%2s", val);
+				clear_buffer();
+				y = char_to_int(val[0],'c',9);
+				x = char_to_int(val[1],'n',9);
+				if ((x == -1)||(y == -1)) printf("\nPlease enter the coordinates (e.g. A2)");
+			} while ((x == -1)||(y == -1));
+
 			//Place flag at x,y.
+			send_instruction(connection, 2, x, y);
 		}
 		
 		//If Q was selected - Quit Game
@@ -212,18 +226,17 @@ int draw_gameview(int connection) {
 			int x,y;
 			printf("\nRevealing a Tile!");
 			do {
-				printf("\nEnter the Column Number: ");
-				x = get_input_number();
-				if (x == -1) printf("\nPlease try again.");
-			} while (x == -1);
+				printf("\nEnter the tile coordinates: ");
+				char val[2];
+				scanf("%2s", val);
+				clear_buffer();
+				y = char_to_int(val[0],'c',9);
+				x = char_to_int(val[1],'n',9);
+				if ((x == -1)||(y == -1)) printf("\nPlease enter the coordinates (e.g. A2)");
+			} while ((x == -1)||(y == -1));
 			
-			do {
-				printf("Enter the Row Letter: ");
-				y = get_input_letter(9);
-				if (y == -1) printf("\nPlease try again\n.");
-			} while (y == -1);
-			printf("\nRevealing Tile!\n");
 			//Reveal tile at x,y.
+			send_instruction(connection, 3, x, y);
 		}
 	
 	return 2;

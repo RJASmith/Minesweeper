@@ -19,7 +19,7 @@
 #define DEFAULT_PORT 12345
 #define CLIENT_CONNECTIONS 10
 
-#define DEBUG 1
+#define DEBUG 0
 
 typedef struct { //Structure used to pass values to threads
 	int connection;
@@ -39,6 +39,7 @@ void *run_game(void *vargs) { //Thread main
 	//Send confirmation to client to let it know to has connected successfully
 	send_int(args->connection, 1);
 	
+	int inProgress = 1; //Main loop (connection) status
 	char username[20], password[20];
 	
 	//Request username
@@ -58,6 +59,7 @@ void *run_game(void *vargs) { //Thread main
 	} else {
 		if (DEBUG) printf("Login FAILED\n");
 		send_int(args->connection, 0);
+		inProgress = 0;
 	}
 	
 	//Allocate memmory to Game
@@ -67,16 +69,26 @@ void *run_game(void *vargs) { //Thread main
 		return NULL;
 	}
 	
-	
 	//Start main loop
-	int inProgress = 1;
 	while(inProgress) {
 		int *instruction = recv_int_array(args->connection, 3);
 		if (instruction[0] == 0) { //Start a new game
-			init_game(game);
-			//Send a int[3] status and a int[9*9] with tile values
+			init_game(game); //Setup game
+			send_game_data(game, args->connection, username); //Send data
+		}
+		if (instruction[0] == 1) { //Show the leader board
+			//TO DO
+		}
+		if (instruction[0] == 2) { //Flag a Tile
+			flag_tile(game, instruction[1], instruction[2]);
 			send_game_data(game, args->connection, username);
-			
+		}
+		if (instruction[0] == 3) { //Reveal a Tile
+			reveal_tile(game, instruction[1], instruction[2]);
+			send_game_data(game, args->connection, username);
+		}
+		if (instruction[0] == 4) { //Show the leader board
+			inProgress = 0;
 		}
 		
 		free(instruction);

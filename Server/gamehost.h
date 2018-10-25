@@ -46,4 +46,10 @@ bool tile_contains_mine(GameState *game, int x, int y);
 //DEBUG COMMAND Displays the Gamestate stats
 void display_gamestate(GameState *game);
 
+//Returns the adjancies at that location. Ends the game if a mine is revealed
+void reveal_tile(GameState *game, int x, int y);
+
+//Flag a mine - ends the game if all mines are flagged
+void flag_tile(GameState *game, int x, int y);
+
 #endif //__GAMEHOST_H__
