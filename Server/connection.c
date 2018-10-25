@@ -15,7 +15,7 @@
 void send_int(int connection, int msg) {
     uint32_t val = htonl(msg);
 		if (send(connection, &val, sizeof(uint32_t),0) == -1) {
-			perror("Error: Send int-");
+			perror("Error: Send char-");
 			exit(1);
 		}
 }
@@ -24,7 +24,7 @@ void send_int(int connection, int msg) {
 int recv_int(int connection) {
 	uint32_t val = 0;	
     if (recv(connection, &val, sizeof(uint32_t),0) == -1) {
-		perror("Error: Recv int-");
+		perror("Error: Recv char-");
 		exit(1);
     }
     return (int)ntohl(val);
@@ -33,7 +33,7 @@ int recv_int(int connection) {
 //Send a string to a network partner
 void send_string(int connection, char msg[20]) {
 		if (send(connection, msg, 20,0) == -1) {
-			perror("Error: Send String-");
+			perror("Error: Send char-");
 			exit(1);
 		}
 }
@@ -42,12 +42,11 @@ void send_string(int connection, char msg[20]) {
 void recv_string(int connection, char *msg) {
     int bytes;
     if ((bytes = recv(connection, msg, 20,0)) == -1) {
-		perror("Error: Recv String-");
+		perror("Error: Recv char-");
 		exit(1);
     }
     msg[bytes] = '\0';
 }
-
 
 
 //Send an int array to a network partner
