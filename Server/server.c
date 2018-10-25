@@ -26,23 +26,32 @@ typedef struct { //Structure used to pass values to threads
 	int *status;
 } game_args;
 	
-
+//This is the main thread function that handles each client
 void *run_game(void *vargs) { //Thread main
 	if (DEBUG) printf("Thread started!\n");
-		game_args *args = (game_args *)vargs;
-		int *p = args->status;
-		*p = 1;
+	
+	//Retrieve values for connection.
+	game_args *args = (game_args *)vargs;
+	int *p = args->status; //Set to 0 when thread is closing
 	
 	if (DEBUG) printf("Thread Connection: %d\n", args->connection);
-	send_int(args->connection, 1); //Send confirmation to client
+	
+	//Send confirmation to client to let it know to has connected successfully
+	send_int(args->connection, 1);
+	
 	char username[20], password[20];
+	
+	//Request username
 	if (DEBUG) printf("Waiting for username...\n");
 	recv_string(args->connection, (char *)username);
 	if (DEBUG) printf("Received username: %s\n", username);
 	
+	//Request Password
 	if (DEBUG) printf("Waiting for password...\n");
 	recv_string(args->connection, (char *)password);
 	if (DEBUG) printf("Received password: %s\n", password);
+	
+	//Authenticate user
 	if (authenticate_user(username, password)) {
 		if (DEBUG) printf("Login SUCCESS\n");
 		send_int(args->connection, 1);
@@ -50,10 +59,35 @@ void *run_game(void *vargs) { //Thread main
 		if (DEBUG) printf("Login FAILED\n");
 		send_int(args->connection, 0);
 	}
-
+	
+	//Allocate memmory to Game
+	GameState *game = (GameState *)malloc(sizeof(GameState));
+	if (game == NULL) {
+		printf("Error: Failed to allocate memory to game\n");
+		return NULL;
+	}
+	
+	
+	//Start main loop
+	int inProgress = 1;
+	while(inProgress) {
+		int *instruction = recv_int_array(args->connection, 3);
+		if (instruction[0] == 0) { //Start a new game
+			init_game(game);
+			//Send a int[3] status and a int[9*9] with tile values
+			send_game_data(game, args->connection, username);
+			
+		}
+		
+		free(instruction);
+	}
+	
+	//Clean up
 	close(args->connection);
 	*p = 0;
 	free(args);
+	free(game);
+	pthread_exit(NULL);
 	return 0;
 }
 
@@ -78,7 +112,7 @@ int main(int argc, char **argv) {
 	
 	//Threads declaration
 	pthread_t tid[CLIENT_CONNECTIONS]; //Thread IDs
-	int tstatus[CLIENT_CONNECTIONS]; //Thread Status - 0 not in use
+	int tstatus[CLIENT_CONNECTIONS]; //Thread Status - 0 not in use, 1 in use
 
 	//Initalising thread status values
 	for (int i = 0; i < CLIENT_CONNECTIONS; i++) {
@@ -139,6 +173,7 @@ int main(int argc, char **argv) {
 				args->status = &tstatus[i];
 				pthread_create(&tid[i], NULL, run_game, args);	//Create Thread
 				if (DEBUG) printf("server: got connection on thread %d\n", i);
+				tstatus[i] = 1; //Set thread as occupied
 				break;
 			}
 		}

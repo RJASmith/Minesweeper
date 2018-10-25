@@ -15,7 +15,7 @@
 void send_int(int connection, int msg) {
     uint32_t val = htonl(msg);
 		if (send(connection, &val, sizeof(uint32_t),0) == -1) {
-			perror("Error: Send char-");
+			perror("Error: Send int-");
 			exit(1);
 		}
 }
@@ -24,7 +24,7 @@ void send_int(int connection, int msg) {
 int recv_int(int connection) {
 	uint32_t val = 0;	
     if (recv(connection, &val, sizeof(uint32_t),0) == -1) {
-		perror("Error: Recv char-");
+		perror("Error: Recv int-");
 		exit(1);
     }
     return (int)ntohl(val);
@@ -33,7 +33,7 @@ int recv_int(int connection) {
 //Send a string to a network partner
 void send_string(int connection, char msg[20]) {
 		if (send(connection, msg, 20,0) == -1) {
-			perror("Error: Send char-");
+			perror("Error: Send String-");
 			exit(1);
 		}
 }
@@ -42,13 +42,42 @@ void send_string(int connection, char msg[20]) {
 void recv_string(int connection, char *msg) {
     int bytes;
     if ((bytes = recv(connection, msg, 20,0)) == -1) {
-		perror("Error: Recv char-");
+		perror("Error: Recv String-");
 		exit(1);
     }
     msg[bytes] = '\0';
-    printf("Received string %s\n", msg);
 }
 
+
+
+//Send an int array to a network partner
+//Size must be declared and consistent between the sender and receiver
+void send_int_array(int connection, int *array, int size) {
+	uint32_t value;  
+	for (int i = 0; i < size; i++) {
+		value = htonl(array[i]);
+		send(connection, &value, sizeof(uint32_t), 0);
+	}
+}
+
+//Receive an int array from a network partner
+//Size must be declared and consistent between the sender and receiver
+int *recv_int_array(int connection, int size) {
+    int number_of_bytes, i=0;
+    uint32_t value;
+	
+	int *results = malloc(sizeof(int)*size);
+	for (i=0; i < size; i++) {
+		if ((number_of_bytes=recv(connection, &value, sizeof(uint32_t), 0))
+		         == -1) {
+			perror("recv");
+			exit(1);			
+		    
+		}
+		results[i] = ntohl(value);
+	}
+	return results;
+}
 
 bool authenticate_user(char username[20], char password[20]) {
     //filepath of authentication.txt. As it is in the same directory, just the filename is needed
@@ -96,7 +125,7 @@ bool authenticate_user(char username[20], char password[20]) {
                 if(isspace(ptr[i])){
                 }
                 else{
-                    printf("%c", ptr[i]);
+                    //printf("%c", ptr[i]);
                     finP[i] = ptr[i];
                 }
             }

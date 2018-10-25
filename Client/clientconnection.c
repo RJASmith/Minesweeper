@@ -40,13 +40,44 @@ void send_string(int connection, char msg[20]) {
 			perror("Error: Send char-");
 			exit(1);
 		}
-	printf("Sent string %s\n", msg);
 }
 
 //Retrive a string from a network partner
-void recv_string(int connection, char *msg[20]) {
-    if (recv(connection, &msg, 20,0) == -1) {
+void recv_string(int connection, char *msg) {
+    int bytes;
+    if ((bytes = recv(connection, msg, 20,0)) == -1) {
 		perror("Error: Recv char-");
 		exit(1);
     }
+    msg[bytes] = '\0';
+}
+
+
+//Send an int array to a network partner
+//Size must be declared and consistent between the sender and receiver
+void send_int_array(int connection, int *array, int size) {
+	uint32_t value;  
+	for (int i = 0; i < size; i++) {
+		value = htonl(array[i]);
+		send(connection, &value, sizeof(uint32_t), 0);
+	}
+}
+
+//Receive an int array from a network partner
+//Size must be declared and consistent between the sender and receiver
+int *recv_int_array(int connection, int size) {
+    int number_of_bytes, i=0;
+    uint32_t value;
+	
+	int *results = malloc(sizeof(int)*size);
+	for (i=0; i < size; i++) {
+		if ((number_of_bytes=recv(connection, &value, sizeof(uint32_t), 0))
+		         == -1) {
+			perror("recv");
+			exit(1);			
+		    
+		}
+		results[i] = ntohl(value);
+	}
+	return results;
 }

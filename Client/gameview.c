@@ -1,8 +1,10 @@
 #include "gameview.h"
 #include "clientconnection.h"
-#include <stdio.h>
+#include <stdio.h> 
+#include <stdlib.h> 
 #define BORDER_LENGTH 9
 #define DEBUG 1
+#define TILES_PER_ROW 9
 
 
 //All function return the new "gameStatus" which correlates to a displayed screen
@@ -13,6 +15,8 @@
 //3		- Leader Boards
 //4		- Exit Game
  
+char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
 void draw_border() {
 	for(int i=0; i < BORDER_LENGTH; i++) printf("========");
 	printf("\n");
@@ -24,7 +28,6 @@ void clear_buffer() {
 
 //Return the numerical value of the alphabet letter
 int get_input_letter(int limit) {
-	char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	char val = '\0';
 	scanf("%c", &val);
 	clear_buffer();
@@ -37,6 +40,7 @@ int get_input_letter(int limit) {
 	return -1;
 }
 
+//takes a number char and return it's integer value-1
 int get_input_number() {
 	char numbers[] = "123456789";
 	char val = '\0';
@@ -72,6 +76,12 @@ int draw_login(int connection) {
 	return 1;
 }
 
+//Send a 3 int array to the server
+void send_instruction(int connection, int a, int x, int y) {
+	int array[3] = {a , x, y};
+	send_int_array(connection, array, 3);
+}
+
 //Draws the Main menu
 int draw_mainmenu(int connection) {
 	draw_border();
@@ -81,14 +91,16 @@ int draw_mainmenu(int connection) {
 	printf("\nSelect Option (1-3): ");
 	int val = get_input_number(3);
 	if (val == 0) {
+		//Tell server a new game is starting
+		send_instruction(connection, 0, 0, 0);
 		printf("\nStarting a new Game...\n");
-		return 2;
+		return 2; //Switch to game menu
 	} else if (val == 1) {
 		printf("\nDisplaying Leaderboards...\n");
-		return 3;
+		return 3; //Swicth to leader board view
 	} else if (val == 2) {
 		printf("\nQuitting Game...\n");
-		return 4;
+		return 4; //Swicth to game clean up screen
 	} else {
 		printf("\nPlease select either 1, 2, or 3.\n");
 	}
@@ -97,17 +109,67 @@ int draw_mainmenu(int connection) {
 
 //Draws the game tiles in the mine field
 int draw_gameview(int connection) {
-	draw_border();	
-	printf("\nRemaining Mines: %d\n", 10);
-	//Get_updated_field
+	draw_border();
+	
+	//Receive game status from the server
+	int *status = recv_int_array(connection, 3);
+	if (DEBUG) printf("Recvd Status\n");
+	//Get tile values
+	int *field = recv_int_array(connection, TILES_PER_ROW*TILES_PER_ROW);
+	if (DEBUG) printf("Recvd Tiles\n");
+	
+	//Displaying mines left and current game time
+	printf("\nRemaining Mines: %d\n", status[1]);
+	
+	
+	
 	//Draw mine field
+	printf("\n     "); //Print numbers at top
+	for (int i=1; i<= TILES_PER_ROW; i++) {
+		printf("%d ", i);
+	}
+	printf("\n "); //Printing the top margin
+	for (int i=0; i< 2*TILES_PER_ROW+4; i++) {
+		printf("-");
+	}
+	int val;
+	for (int i=0; i< TILES_PER_ROW; i++) {
+		printf("\n %c | ", letters[i]);
+		for (int x=0; x < TILES_PER_ROW; x++) {
+			val = field[x+(i*TILES_PER_ROW)];
+			if (val == -1) {
+				printf("  ");
+			} else if (val == -2) {
+				printf("+ ");
+			} else {
+				printf("%d ", val);
+			}
+		}
+	}
+	printf("\n");
+	fflush(stdout);
+	
+	//If the game is over, check to see if player won
+	if (status[0] == 0) {
+		if (status[1] == 0) {
+			printf("\nCongradulations! You found all the mines!\n");
+			printf("You won in %d seconds!\n", status[2]);
+		} else {
+			printf("\nGame Over! You hit a mine.\n");
+			printf("The game lasted %d seconds.\n", status[2]);
+		}
+		return 1; //Returns to the main menu
+	}
+		
 	printf("\nChoose an Option:\n");
 	printf("<R> Reveal a Tile\n");
 	printf("<P> Place a Flag\n");
 	printf("<Q> Quit Game\n");
 	
-	int input, gameProgress = 1;
+	free(status);
 	
+	//Get input and action game menu
+	int input;
 		//Get the option selected
 		do {
 			printf("\nOption (R, P, Q): ");
@@ -142,7 +204,7 @@ int draw_gameview(int connection) {
 		//If Q was selected - Quit Game
 		if (input == 16) {
 			printf("\nReturning to Main Menu...\n");
-			gameProgress = 0;
+			return 1;
 		}
 	
 		//If R was selected - Reveal Tile
@@ -164,11 +226,6 @@ int draw_gameview(int connection) {
 			//Reveal tile at x,y.
 		}
 	
-
-	
-	if (!gameProgress) {
-		return 1;
-	}
 	return 2;
 }
 

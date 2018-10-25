@@ -16,7 +16,6 @@
 #include <unistd.h>
 
 #define DEFAULT_PORT 12345
-#define MAX_DATA_SIZE 256
 
 //All function return the new "gameStatus" which correlates to a displayed screen
 //Number - Effect
@@ -31,7 +30,6 @@ int gameStatus = 0;
 
 int main(int argc, char **argv) {
 	int myPort, sockfd;  
-	char buffer[MAX_DATA_SIZE];
 	struct hostent *he;
 	struct sockaddr_in server_addr; // server address information
 
@@ -73,7 +71,6 @@ int main(int argc, char **argv) {
 	
 	//Wait for server confirmation
 	int val = recv_int(sockfd);
-	printf("Received %d\n", val);
 	
 	//If server returns 0 (too busy)
 	if (val == 0) {
@@ -81,24 +78,6 @@ int main(int argc, char **argv) {
 		close(sockfd);
 		exit(1);
 	}
-	
-	//Game initialiser
-	/*if ((recv(sockfd, buffer, 254, 0)) == -1) {
-		perror("recv");
-		exit(1);
-	}
-	
-	buffer[255] = '\0';
-
-	printf("Received: %s",buffer);
-	
-	if (buffer[0] == '1') {
-	 	printf("Connected to server...\n");
-	} else {
-	 	printf("The server is too busy, try again later.\n");
-		close(sockfd);
-		exit(1);
-	}*/
 	
 	while(gameStatus != 4) {
 		if (gameStatus == 0) { //Game status is 0 = Login Screen

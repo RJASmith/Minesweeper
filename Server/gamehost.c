@@ -1,5 +1,7 @@
 #include "gamehost.h"
+#include "connection.h"
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
 #define DEBUG 1
@@ -10,6 +12,73 @@ void reveal_adjacent_tiles(GameState *game, int x , int y);
 //Checks the coordinates for a mine
 bool tile_contains_mine(GameState *game, int x, int y) {
 	return (game->tiles[x][y].is_mine);
+}
+
+//Updates the leader board when a game completes
+void update_leaderboard(GameState *game, char *username) {
+	//TO DO
+}
+
+//Send a int[3] status and a int[9*9] with tile values
+void send_game_data(GameState *game, int connection, char *username) {
+	
+	//Prepare game status
+	if (DEBUG) printf("Preparing game status...\n");
+	int status[3] = {game->inProgress, game->remainingMines, (int)difftime(game->time, time(0))};
+	if (game->inProgress == 0) {
+		game->time = difftime(game->time, time(0));
+		update_leaderboard(game, username);
+	}
+	//Send game status
+	if (DEBUG) printf("Sending game status...\n");
+	send_int_array(connection, status, 3);
+	
+	//Prepare game field in array
+	if (DEBUG) printf("Preparing game field...\n");
+	int field[NUM_TILES_X*NUM_TILES_Y];
+	for(int x=0; x < NUM_TILES_X; x++) {
+		for(int y=0; y < NUM_TILES_Y; y++) {
+			int val = -1; //Not revealed or flagged. Display nothing
+			
+			//If it has been flagged
+			if (game->tiles[x][y].is_flag) {
+				val = -2; //display: *
+			}
+			
+			//If the tile is revealed or if game is over
+			if ((game->tiles[x][y].revealed) || (game->inProgress == 0)) {
+				val = game->tiles[x][y].adjacent_mines;
+			}
+			
+			//If the game is over, show all mines
+			if ((game->inProgress == 0) && (game->tiles[x][y].is_mine)) {
+				val = -2; //display: *
+			}
+				
+			field[x+NUM_TILES_X*y] = val;
+		}
+	}
+	if (DEBUG) printf("Sending game status...\n");
+	send_int_array(connection, field, NUM_TILES_X*NUM_TILES_Y);
+	if (DEBUG) printf("Game data sent!\n");
+	
+	
+	//REMOVE BELOW
+	int val;
+	for (int y=0; y< 9; y++) {
+		printf("\n | ");
+		for (int x=0; x < 9; x++) {
+			val = field[x+(y*9)];
+			if (val == -1) {
+				printf("# ");
+			} else if (val == -2) {
+				printf("+ ");
+			} else {
+				printf("%d ", val);
+			}
+		}
+		
+	}
 }
 
 //Cycles through tiles detecting adjacent mines (9 tiles checking including itself)
@@ -67,6 +136,7 @@ void place_mines(GameState *game) {
 		if (DEBUG) printf("Place mine %d %d\n", x, y);
 		game->tiles[x][y].is_mine = 1;
 	}
+	game->remainingMines = NUM_MINES;
 }
 
 //Initialisation of the game state.
@@ -74,26 +144,26 @@ void place_mines(GameState *game) {
 //Triggers mine placement
 //Setup adjacencies
 //Returns the GameState Pointer
-GameState * init_game() {
+void init_game(GameState *game) {
 	if (DEBUG) printf("Init Started\n");
-	GameState *game = (GameState *)malloc(sizeof(GameState));
-	if (game == NULL) {
-		if (DEBUG) printf("Initialisation failure\n");
-		return NULL;
-	}
-	if (DEBUG) printf("New Game Started\n");
-	for(int x=0; x < NUM_TILES_X; x++) {
+
+	//Zero all values
+	memset(game, 0, sizeof(GameState));
+	if (DEBUG) printf("Memory primed\n");
+	/*for(int x=0; x < NUM_TILES_X; x++) {
 		for(int y=0; y < NUM_TILES_Y; y++) {
 			game->tiles[x][y].adjacent_mines = 0;
 			game->tiles[x][y].is_mine = 0;
 			game->tiles[x][y].revealed = 0;
 		}
-	}
+	}*/
 	place_mines(game);
 	set_adjacencies(game);
+	game->time = time(0);
+	game->inProgress = 1;
+	if (DEBUG) printf("All Values set\n");
 	
 	if (DEBUG) display_gamestate(game);
-	return game;
 }
 
 //Returns the adjancies at that location

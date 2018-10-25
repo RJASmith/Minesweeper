@@ -17,4 +17,12 @@ void send_string(int connection, char msg[20]);
 //Retrive a string from a network partner
 void recv_string(int connection, char *msg);
 
+//Send an int array to a network partner
+//Size must be declared and consistent between the sender and receiver
+void send_int_array(int connection, int *array, int size);
+
+//Send an int array from a network partner
+//Size must be declared and consistent between the sender and receiver
+int *recv_int_array(int connection, int size);
+
 #endif //__CONNECTION_H__
