@@ -15,3 +15,13 @@ struct node {
     LBEntry_t *lbentry;
     node_t *next;
 };
+
+node_t * node_add(node_t *head, LBEntry_t *lbentry);
+
+void draw_leaderboard(node_t *leaderboard);
+
+int check_alpha_order(char first[20], char second[20]);
+
+node_t * insert_into_leaderboard(node_t *leaderboard, LBEntry_t *lbentry);
+
+#endif
