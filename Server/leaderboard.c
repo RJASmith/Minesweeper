@@ -1,5 +1,4 @@
 #include "leaderboard.h"
-#include "clientconnection.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
