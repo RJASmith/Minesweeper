@@ -1,6 +1,7 @@
 #ifndef __GAMEHOST_H__
 #define __GAMEHOST_H__
 #include <stdbool.h>
+#include <pthread.h>
 #include <time.h>
 #define NUM_MINES 10
 #define NUM_TILES_X 9
@@ -19,6 +20,8 @@ typedef struct {
 	int inProgress;
 	time_t time;
 } GameState;
+
+pthread_mutex_t rand_mutex;
 
 //Initialise a new game
 void init_game(GameState *game);

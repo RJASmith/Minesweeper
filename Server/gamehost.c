@@ -17,7 +17,7 @@ bool tile_contains_mine(GameState *game, int x, int y) {
 
 //Send a int[3] status and a int[9*9] with tile values
 void send_game_data(GameState *game, int connection, char *username) {
-	
+
 	//Prepare game status
 	if (DEBUG) printf("Preparing game status...\n");
 	int status[3] = {game->inProgress, game->remainingMines, (int)difftime(time(0), game->time)};
@@ -28,30 +28,30 @@ void send_game_data(GameState *game, int connection, char *username) {
 	//Send game status
 	if (DEBUG) printf("Sending game status...\n");
 	send_int_array(connection, status, 3);
-	
+
 	//Prepare game field in array
 	if (DEBUG) printf("Preparing game field...\n");
 	int field[NUM_TILES_X*NUM_TILES_Y];
 	for(int x=0; x < NUM_TILES_X; x++) {
 		for(int y=0; y < NUM_TILES_Y; y++) {
-			
+
 			int val = -1; //Default. Display nothing
-			
+
 			//If it has been flagged
 			if (game->tiles[x][y].is_flag) {
 				val = -2; //display: +
 			}
-			
+
 			//If the game is over, show all mines
 			if ((game->inProgress == 0) && (game->tiles[x][y].is_mine)) {
 				val = -3; //display: *
 			}
-			
+
 			//If the tile is revealed
 			if (game->tiles[x][y].revealed) {
 				val = game->tiles[x][y].adjacent_mines;
 			}
-			
+
 			field[x+NUM_TILES_X*y] = val;
 		}
 	}
@@ -104,18 +104,20 @@ void reveal_adjacent_tiles(GameState *game, int x , int y) {
 
 //Place all mines into the GameState Tiles at random locations
 void place_mines(GameState *game) {
+	pthread_mutex_lock(&rand_mutex);
 	for(int i=0; i < NUM_MINES; i++) {
 		int x,y;
 		do {
 			x = rand() % NUM_TILES_X;
 			y = rand() % NUM_TILES_X;
-			
+
 		} while (tile_contains_mine(game, x, y));
 		//Place a mine
 		if (DEBUG) printf("Place mine %d %d\n", x, y);
 		game->tiles[x][y].is_mine = 1;
 	}
 	game->remainingMines = NUM_MINES;
+	pthread_mutex_unlock(&rand_mutex);
 }
 
 //Initialisation of the game state.
@@ -141,7 +143,7 @@ void init_game(GameState *game) {
 	game->time = time(0);
 	game->inProgress = 1;
 	if (DEBUG) printf("All Values set\n");
-	
+
 	if (DEBUG) display_gamestate(game);
 }
 
@@ -191,7 +193,7 @@ void display_gamestate(GameState *game) {
 		}
 	}
 	printf("\n");
-	
+
 	printf("TILES\n");
 	for(int x=0; x < NUM_TILES_X; x++) {
 		for(int y=0; y < NUM_TILES_Y; y++) {
@@ -204,4 +206,3 @@ void display_gamestate(GameState *game) {
 		printf("\n");
 	}
 }
-
