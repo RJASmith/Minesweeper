@@ -4,26 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-//Send the leaderboard
-void send_leaderboard(int connection) {
-	//Cycle through updating existing entries
-	LBEntry_t *current = leaderboard;
-	for( ; current != NULL; current = current->next) {
-		//If this is a visible entry (a winning game record)
-		if (current->visible) {
-			//Notify client that an entry is about to be sent
-			send_int(connection, 1);
-			
-			//Ready message - Send username
-			char buf[256];
-			snprintf(buf, sizeof buf, "%s\t\t%d\tSeconds\t\t%d Games Won,\t%d Games Played\n",
-					 current->name, current->seconds_played, current->games_won, current->games_played);
-			send_string(connection, buf);
-		} 
-	}
-	//Tell client there are no more entires to be sent
-	send_int(connection, 0);
-}
+static volatile int writers;
+static volatile int writing;
+static volatile int reading;
+
 
 
 //Destroy leaderboard when game is over
@@ -77,8 +61,47 @@ int check_alpha_order(char first[20], char second[20]){
 	return order;
 }
 
+//Send the leaderboard
+void send_leaderboard(int connection) {
+	pthread_mutex_lock(&lb_mutex);
+	while(writers != 0) {
+		pthread_cond_wait(&cv, &lb_mutex);
+	}
+	reading++;
+	pthread_mutex_unlock(&lb_mutex);
+	//Cycle through updating existing entries
+	LBEntry_t *current = leaderboard;
+	for( ; current != NULL; current = current->next) {
+		//If this is a visible entry (a winning game record)
+		if (current->visible) {
+			//Notify client that an entry is about to be sent
+			send_int(connection, 1);
+
+			//Ready message - Send username
+			char buf[256];
+			snprintf(buf, sizeof buf, "%s\t\t%d\tSeconds\t\t%d Games Won,\t%d Games Played\n",
+					 current->name, current->seconds_played, current->games_won, current->games_played);
+			send_string(connection, buf);
+		}
+	}
+	pthread_mutex_lock(&lb_mutex);
+	reading--;
+	pthread_cond_broadcast(&cv);
+	pthread_mutex_unlock(&lb_mutex);
+	//Tell client there are no more entires to be sent
+	send_int(connection, 0);
+}
+
+
 //Insert the new entry into the list at the appropriate location
 LBEntry_t * insert_into_leaderboard(LBEntry_t *head, LBEntry_t *newEntry){
+	pthread_mutex_lock(&lb_mutex);
+	writers++;
+	while(reading != 0 || writing != 0) {
+		pthread_cond_wait(&cv, &lb_mutex);
+	}
+	writing++;
+	pthread_mutex_unlock(&lb_mutex);
 	//pointer for looping
 	LBEntry_t *current = head;
 	LBEntry_t *previous = NULL;
@@ -125,6 +148,11 @@ LBEntry_t * insert_into_leaderboard(LBEntry_t *head, LBEntry_t *newEntry){
 			current = current->next;
 		}
 	}
+	pthread_mutex_lock(&lb_mutex);
+	writing--;
+	writers--;
+	pthread_cond_broadcast(&cv);
+	pthread_mutex_unlock(&lb_mutex);
 	return head;
 }
 
@@ -133,23 +161,23 @@ LBEntry_t * insert_into_leaderboard(LBEntry_t *head, LBEntry_t *newEntry){
 void update_leaderboard(GameState *game, char *username) {
 	//initial values
 	int game_was_won = 0, entry_found = 0, entry_place = 0;
-	
+
 	if (game->remainingMines == 0) {
 		game_was_won = 1; //This was a winning game
 		entry_place =1; //Mark it to be placed
 	}
-	
+
 	//Set initial values
 	LBEntry_t *newEntry = (LBEntry_t *)malloc(sizeof(LBEntry_t));
     strcpy(newEntry->name, username); //Set name to username
-    newEntry->seconds_played = (int)game->time; //Get seconds 
+    newEntry->seconds_played = (int)game->time; //Get seconds
     newEntry->visible = game_was_won; //If game was not won, don't show entry
-	
+
 	//Cycle through updating existing entries
 	LBEntry_t *current = leaderboard;
 	for( ; current != NULL; current = current->next) {
 		//If a match is found
-		if (strcmp(current->name, newEntry->name)==0) { 
+		if (strcmp(current->name, newEntry->name)==0) {
 			current->games_played++;
 			current->games_won += game_was_won;
 		}
@@ -161,7 +189,7 @@ void update_leaderboard(GameState *game, char *username) {
     		newEntry->games_played = current->games_played;
 		}
 	}
-	
+
 	//If no entry was found
 	if (entry_found == 0) {
 		entry_place = 1; //Mark this entry to be placed
@@ -169,7 +197,7 @@ void update_leaderboard(GameState *game, char *username) {
 		newEntry->games_won = game_was_won;
 		newEntry->games_played = 1;
 	}
-	
+
 	//If this entry is good to be added
 	if (entry_place) {
 		leaderboard = insert_into_leaderboard(leaderboard, newEntry);

@@ -22,13 +22,6 @@
 
 #define DEBUG 0
 
-static volatile int inProgress = 1;
-
-
-void closeThread(int num) {
-	inProgress = 0;
-}
-
 typedef struct { //Structure used to pass values to threads
 	int connection;
 	int *status;
@@ -38,6 +31,7 @@ typedef struct { //Structure used to pass values to threads
 void *run_game(void *vargs) { //Thread main
 	if (DEBUG) printf("Thread started!\n");
 
+	int inProgress = 1;
 	//Retrieve values for connection.
 	game_args *args = (game_args *)vargs;
 	int *p = args->status; //Set to 0 when thread is closing
@@ -114,7 +108,6 @@ void *run_game(void *vargs) { //Thread main
 
 int main(int argc, char **argv) {
 
-	//signal(SIGINT, closeThread);
 	leaderboard = NULL;
 	//Network Connection declaration
 	int myPort, sockfd, clientfd;
@@ -170,6 +163,11 @@ int main(int argc, char **argv) {
 
 	//Initialise mutex lock for use within threads
 	if (pthread_mutex_init(&rand_mutex, NULL) != 0){
+		printf("\n mutex initialisation has failed\n");
+		return 1;
+	}
+
+	if (pthread_mutex_init(&lb_mutex, NULL) != 0){
 		printf("\n mutex initialisation has failed\n");
 		return 1;
 	}

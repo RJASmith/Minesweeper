@@ -39,6 +39,11 @@ LBEntry_t *leaderboard;
 //Mutex init for ran() functions
 pthread_mutex_t rand_mutex;
 
+//Mutex for leaderboard read and write.
+pthread_mutex_t lb_mutex;
+
+pthread_cond_t cv;
+
 //Initialise a new game
 void init_game(GameState *game);
 

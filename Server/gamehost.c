@@ -1,6 +1,5 @@
 #include "gamehost.h"
 #include "connection.h"
-#include "leaderboard.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
