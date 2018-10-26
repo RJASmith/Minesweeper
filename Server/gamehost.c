@@ -178,7 +178,7 @@ void flag_tile(GameState *game, int x, int y) {
 			game->tiles[x][y].is_flag = 1; 	//Flag it
 		}
 	}
-	if (game->remainingMines == 1) {
+	if (game->remainingMines == 0) {
 		game->inProgress = 0;
 	}
 }
