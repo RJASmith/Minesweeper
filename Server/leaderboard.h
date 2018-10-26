@@ -1,5 +1,7 @@
 #ifndef __LEADERBOARD_H__
 #define __LEADERBOARD_H__
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 typedef struct LBEntry LBEntry_t;
@@ -9,15 +11,12 @@ struct LBEntry {
 	int seconds_played;
 	int games_played;
 	int games_won;
+	bool visible; //If it will be displayed to the leaderboard
     LBEntry_t *next;
 };
 
 
-//Updates the leader board when a game completes
-void update_leaderboard(GameState *game, char *username) {
-	//TO DO
-}
+//The pointer to the leaderboard
+LBEntry_t *leaderboard;
 
-LBEntry_t * insert_into_leaderboard(LBEntry_t *leaderboard, LBEntry_t *lbentry);
-
-#endif
+#endif //__LEADERBOARD_H__

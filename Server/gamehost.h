@@ -21,8 +21,22 @@ typedef struct {
 	time_t time;
 } GameState;
 
-pthread_mutex_t rand_mutex;
+typedef struct LBEntry LBEntry_t;
+//Defining a linked list for the leaderboard
+struct LBEntry {
+	char name[20];
+	int seconds_played;
+	int games_won;
+	int games_played;
+	bool visible; //If it will be displayed to the leaderboard
+    LBEntry_t *next;
+};
 
+
+
+LBEntry_t *leaderboard;
+//The pointer to the leaderboard
+pthread_mutex_t rand_mutex;
 //Initialise a new game
 void init_game(GameState *game);
 
@@ -43,5 +57,8 @@ void reveal_tile(GameState *game, int x, int y);
 
 //Flag a mine - ends the game if all mines are flagged
 void flag_tile(GameState *game, int x, int y);
+
+//Updates the leader board when a game completes
+void update_leaderboard(GameState *game, char *username);
 
 #endif //__GAMEHOST_H__
