@@ -1,15 +1,21 @@
-#include "leaderboard.h"
-#include "connection.h"
+#include "gamehost.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-//Updates the leader board when a game completes
-void update_leaderboard(GameState *game, char *username) {
-	//TO DO
+//Destroy leaderboard when game is over
+void destroy_leaderboard() {
+	//Cycle through updating existing entries
+	LBEntry_t *current = leaderboard;
+	LBEntry_t *next = NULL;
+	while(current != NULL) {
+		next = current->next;
+		free(current);
+		current = next;
+	}
 }
 
-
+//Chech the alphabetical order
 int check_alpha_order(char first[20], char second[20]){
 	char charTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	int firstNum[20];
@@ -48,7 +54,7 @@ int check_alpha_order(char first[20], char second[20]){
 	return order;
 }
 
-
+//Insert the new entry into the list at the appropriate location
 LBEntry_t * insert_into_leaderboard(LBEntry_t *head, LBEntry_t *newEntry){
 	//pointer for looping
 	LBEntry_t *current = head;
@@ -96,10 +102,61 @@ LBEntry_t * insert_into_leaderboard(LBEntry_t *head, LBEntry_t *newEntry){
 			current = current->next;
 		}
 	}
+	return head;
+}
+
+
+//Updates the leader board when a game completes
+void update_leaderboard(GameState *game, char *username) {
+	//initial values
+	int game_was_won = 0, entry_found = 0, entry_place = 0;
+	
+	if (game->remainingMines == 0) {
+		game_was_won = 1; //This was a winning game
+		entry_place =1; //Mark it to be placed
+	}
+	
+	//Set initial values
+	LBEntry_t *newEntry = (LBEntry_t *)malloc(sizeof(LBEntry_t));
+    strcpy(newEntry->name, username); //Set name to username
+    newEntry->seconds_played = (int)game->time; //Get seconds 
+    newEntry->visible = game_was_won; //If game was not won, don't show entry
+	
+	//Cycle through updating existing entries
+	LBEntry_t *current = leaderboard;
+	for( ; current != NULL; current = current->next) {
+		//If a match is found
+		if (strcmp(current->name, newEntry->name)==0) { 
+			current->games_played++;
+			current->games_won += game_was_won;
+		}
+		//If this is the first entry found
+		if (entry_found == 0) {
+			entry_found = 1;
+			//Update newEntry stats
+			newEntry->games_won = current->games_won;
+    		newEntry->games_played = current->games_played;
+		}
+	}
+	
+	//If no entry was found
+	if (entry_found == 0) {
+		entry_place = 1; //Mark this entry to be placed
+		//Update newEntry stats as first entry
+		newEntry->games_won = game_was_won;
+		newEntry->games_played = 1;
+	}
+	
+	//If this entry is good to be added
+	if (entry_place) {
+		leaderboard = insert_into_leaderboard(leaderboard, newEntry);
+	} else {
+		free(newEntry); //Free the entry as it was not placed.
+	}
 }
 
 //Used for testing of the leaderboard
-void main() {
+int test_leaderboard() {
 
     //LBEntry_t *leaderboard = (LBEntry_t *)malloc(sizeof(LBEntry_t));
     LBEntry_t *head= NULL;
@@ -144,5 +201,5 @@ void main() {
 	for( ; current != NULL; current = current->next) {
 		printf("%s", current->name);
 	}
-
+	return 0;
 }
