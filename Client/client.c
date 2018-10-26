@@ -92,7 +92,6 @@ int main(int argc, char **argv) {
 		if (gameStatus == 3) { //Game status is 3 + Leader Boards
 			gameStatus = draw_leaderboard(sockfd);
 		}
-
-	} //Game status is 4 = Quitting
-	//Free allocatied memory
+	}
+	return 0;
 }
