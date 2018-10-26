@@ -85,7 +85,7 @@ void *run_game(void *vargs) { //Thread main
 			send_game_data(game, args->connection, username); //Send data
 		}
 		if (instruction[0] == 1) { //Show the leader board
-			//TO DO
+			send_leaderboard(args->connection);
 		}
 		if (instruction[0] == 2) { //Flag a Tile
 			flag_tile(game, instruction[1], instruction[2]);

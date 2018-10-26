@@ -153,10 +153,3 @@ bool authenticate_user(char username[20], char password[20]) {
         return FALSE;
     }
 }
-/* main that was used in testing
-void main() {
-    char username[20] = "Maolin";
-    char password[20] = "111111";
-    authenticate_user(username, password);
-}
-*/

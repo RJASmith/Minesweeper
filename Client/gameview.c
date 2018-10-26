@@ -252,7 +252,7 @@ int draw_leaderboard(int connection) {
 	int status;
 	status = recv_int(connection);
 	if (status == 0) {
-		printf("There is no information currently stored in the leaderboards. try again later");
+		printf("There is no information currently stored in the leaderboards. try again later\n");
 	} else {
 		while (status) {
 			char buf[255];
