@@ -13,9 +13,10 @@ struct LBEntry {
 };
 
 
-void draw_leaderboard(LBEntry_t *leaderboard);
-
-int check_alpha_order(char first[20], char second[20]);
+//Updates the leader board when a game completes
+void update_leaderboard(GameState *game, char *username) {
+	//TO DO
+}
 
 LBEntry_t * insert_into_leaderboard(LBEntry_t *leaderboard, LBEntry_t *lbentry);
 

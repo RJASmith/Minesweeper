@@ -1,5 +1,6 @@
 #include "gamehost.h"
 #include "connection.h"
+#include "leaderboard.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,11 +13,6 @@ void reveal_adjacent_tiles(GameState *game, int x , int y);
 //Checks the coordinates for a mine
 bool tile_contains_mine(GameState *game, int x, int y) {
 	return (game->tiles[x][y].is_mine);
-}
-
-//Updates the leader board when a game completes
-void update_leaderboard(GameState *game, char *username) {
-	//TO DO
 }
 
 //Send a int[3] status and a int[9*9] with tile values

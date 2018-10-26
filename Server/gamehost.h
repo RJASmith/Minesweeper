@@ -20,17 +20,6 @@ typedef struct {
 	time_t time;
 } GameState;
 
-//Defining a linked list for the leaderboard
-typedef struct LBEntry LBEntry_t;
-
-struct LBEntry {
-	char name[20];
-	int seconds_played;
-	int games_played;
-	int games_won;
-	LBEntry_t *next;
-};
-
 //Initialise a new game
 void init_game(GameState *game);
 

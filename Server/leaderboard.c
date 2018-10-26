@@ -1,23 +1,12 @@
 #include "leaderboard.h"
+#include "connection.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void draw_line(int length){
-	printf("\n");
-	for(int i = 0;i < length; i++){
-		printf("=");
-	}
-	printf("\n");
-}
-
-
-//Draws the Leader Boards
-void draw_leaderboard(LBEntry_t *leaderboard) {
-	int lineLength = 90;
-	draw_line(lineLength);
-
-	draw_line(lineLength);
+//Updates the leader board when a game completes
+void update_leaderboard(GameState *game, char *username) {
+	//TO DO
 }
 
 
@@ -64,7 +53,7 @@ LBEntry_t * insert_into_leaderboard(LBEntry_t *head, LBEntry_t *newEntry){
 	//pointer for looping
 	LBEntry_t *current = head;
 	LBEntry_t *previous = NULL;
-	//if the linked list is currently empty, set the head to the provided entry
+	//if the linked list is currently 7349520empty, set the head to the provided entry
     if(current == NULL) {
         return newEntry;
     }
@@ -109,6 +98,7 @@ LBEntry_t * insert_into_leaderboard(LBEntry_t *head, LBEntry_t *newEntry){
 	}
 }
 
+//Used for testing of the leaderboard
 void main() {
 
     //LBEntry_t *leaderboard = (LBEntry_t *)malloc(sizeof(LBEntry_t));
