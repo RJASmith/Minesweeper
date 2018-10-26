@@ -14,12 +14,19 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <signal.h>
 
 #define RANDOM_NUMBER_SEED 42
 #define DEFAULT_PORT 12345
 #define CLIENT_CONNECTIONS 10
 
 #define DEBUG 0
+
+static volatile int cont = 1;
+
+void contChange(int num) {
+	cont = 0;
+}
 
 typedef struct { //Structure used to pass values to threads
 	int connection;
@@ -105,6 +112,8 @@ void *run_game(void *vargs) { //Thread main
 
 
 int main(int argc, char **argv) {
+
+	signal(SIGINT, contChange);
 
 	//Network Connection declaration
 	int myPort, sockfd, clientfd;
