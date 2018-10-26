@@ -1,7 +1,30 @@
 #include "gamehost.h"
+#include "connection.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+//Send the leaderboard
+void send_leaderboard(int connection) {
+	//Cycle through updating existing entries
+	LBEntry_t *current = leaderboard;
+	for( ; current != NULL; current = current->next) {
+		//If this is a visible entry (a winning game record)
+		if (current->visible) {
+			//Notify client that an entry is about to be sent
+			send_int(connection, 1);
+			
+			//Ready message - Send username
+			char buf[256];
+			snprintf(buf, sizeof buf, "%s\t\t%d\tSeconds\t\t%d Games Won,\t%d Games Played\n",
+					 current->name, current->seconds_played, current->games_won, current->games_played);
+			send_string(connection, buf);
+		} 
+	}
+	//Tell client there are no more entires to be sent
+	send_int(connection, 0);
+}
+
 
 //Destroy leaderboard when game is over
 void destroy_leaderboard() {

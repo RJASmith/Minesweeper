@@ -33,10 +33,12 @@ struct LBEntry {
 };
 
 
-
-LBEntry_t *leaderboard;
 //The pointer to the leaderboard
+LBEntry_t *leaderboard;
+
+//Mutex init for ran() functions
 pthread_mutex_t rand_mutex;
+
 //Initialise a new game
 void init_game(GameState *game);
 
@@ -60,5 +62,8 @@ void flag_tile(GameState *game, int x, int y);
 
 //Updates the leader board when a game completes
 void update_leaderboard(GameState *game, char *username);
+
+//Send the leaderboard to the client
+void send_leaderboard(int connection);
 
 #endif //__GAMEHOST_H__

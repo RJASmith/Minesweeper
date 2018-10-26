@@ -244,6 +244,26 @@ int draw_gameview(int connection) {
 
 //Draws the Leader Boards
 int draw_leaderboard(int connection) {
-	return 4;
+	printf("\n");
+	draw_border();
+	printf("\n");
+	//Server will tell us if there are more entries in the leaderboard
+	//0 - no entries / 1 - entry is about to be sent
+	int status;
+	status = recv_int(connection);
+	if (status == 0) {
+		printf("There is no information currently stored in the leaderboards. try again later");
+	} else {
+		while (status) {
+			char buf[255];
+			recv_string(connection, buf);
+			printf("%s", buf); //Print entry
+			status = recv_int(connection); //Update status
+		}
+	}
+	
+	printf("\n");
+
+	return 1;
 }
 

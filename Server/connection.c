@@ -31,8 +31,8 @@ int recv_int(int connection) {
 }
 
 //Send a string to a network partner
-void send_string(int connection, char msg[20]) {
-		if (send(connection, msg, 20,0) == -1) {
+void send_string(int connection, char msg[256]) {
+		if (send(connection, msg, 256,0) == -1) {
 			perror("Error: Send char-");
 			exit(1);
 		}
@@ -77,6 +77,7 @@ int *recv_int_array(int connection, int size) {
 	}
 	return results;
 }
+
 
 bool authenticate_user(char username[20], char password[20]) {
     //filepath of authentication.txt. As it is in the same directory, just the filename is needed

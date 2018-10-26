@@ -12,7 +12,7 @@ void send_int(int connection, int msg);
 int recv_int(int connection);
 
 //Send a string to a network partner
-void send_string(int connection, char msg[20]);
+void send_string(int connection, char msg[256]);
 
 //Retrive a string from a network partner
 void recv_string(int connection, char *msg);

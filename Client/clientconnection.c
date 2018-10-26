@@ -45,7 +45,7 @@ void send_string(int connection, char msg[20]) {
 //Retrive a string from a network partner
 void recv_string(int connection, char *msg) {
     int bytes;
-    if ((bytes = recv(connection, msg, 20,0)) == -1) {
+    if ((bytes = recv(connection, msg, 256,0)) == -1) {
 		perror("Error: Recv char-");
 		exit(1);
     }
