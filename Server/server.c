@@ -22,10 +22,11 @@
 
 #define DEBUG 0
 
-static volatile int cont = 1;
+static volatile int inProgress = 1;
 
-void contChange(int num) {
-	cont = 0;
+
+void closeThread(int num) {
+	inProgress = 0;
 }
 
 typedef struct { //Structure used to pass values to threads
@@ -46,7 +47,7 @@ void *run_game(void *vargs) { //Thread main
 	//Send confirmation to client to let it know to has connected successfully
 	send_int(args->connection, 1);
 
-	int inProgress = 1; //Main loop (connection) status
+	//int inProgress = 1; //Main loop (connection) status
 	char username[20], password[20];
 
 	//Request username
@@ -113,8 +114,8 @@ void *run_game(void *vargs) { //Thread main
 
 int main(int argc, char **argv) {
 
-	signal(SIGINT, contChange);
-
+	//signal(SIGINT, closeThread);
+	leaderboard = NULL;
 	//Network Connection declaration
 	int myPort, sockfd, clientfd;
 	socklen_t sin_size;
